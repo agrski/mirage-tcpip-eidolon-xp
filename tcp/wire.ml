@@ -67,8 +67,9 @@ module Make (Ip:V1_LWT.IP) = struct
     (* At this point, extend the IPv4 view by the TCP+options size *)
     let frame = Cstruct.set_len frame (header_len + Tcp_wire.sizeof_tcp + options_len) in
     let sequence = Sequence.to_int32 seq in
-    let ack_number =
-      match rx_ack with Some n -> Sequence.to_int32 n |None -> 0l
+    let ack_number = match rx_ack with
+      | Some n  -> Sequence.to_int32 n
+      | None    -> Random.int32 65535
     in
     let data_off = (Tcp_wire.sizeof_tcp / 4) + (options_len / 4) in
     Tcp_wire.set_tcp_src_port tcp_frame id.local_port;
