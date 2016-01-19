@@ -117,7 +117,11 @@ struct
       let datalen = Int32.add (if syn then 1l else 0l) (if fin then 1l else 0l) in
       let window = 0 in
       let options = [] in
-      let seq = Sequence.of_int32 ack_number in
+(* HERE My code to handle T5 probe - set S=Z  *)
+      let seq = match syn with
+        | true  -> Sequence.of_int 0                  (* Handling T5  *)
+        | false -> Sequence.of_int32 ack_number       (* Original     *)
+      in
       let rx_ack = Some (Sequence.of_int32 (Int32.add sequence datalen)) in
       WIRE.xmit ~ip ~id ~rst:true ~rx_ack ~seq ~window ~options []
 
