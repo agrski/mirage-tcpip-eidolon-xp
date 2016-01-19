@@ -125,6 +125,7 @@ struct
       let rx_ack = match syn with
         | true  -> Some (Sequence.of_int32 (Int32.add sequence datalen))
         | false -> None (* Set ack=false i.e. F=R, set ack # = 0l; based on wire.ml *)
+      in
 (* End my code *)
       WIRE.xmit ~ip ~id ~rst:true ~rx_ack ~seq ~window ~options []
 
