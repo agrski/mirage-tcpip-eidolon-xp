@@ -508,10 +508,11 @@ struct
       | true , true  -> process_synack t id ~pkt ~ack_number ~sequence
                           ~options ~syn ~fin
 (* HERE My code - exclude response to T3 probe from nmap *)
-      | true, false  -> match fin, urg, psh with
+      | true, false  -> begin match fin, urg, psh with
         | true, true, true  -> Lwt.return_unit
         | _, _, _           -> process_syn t id ~listeners ~pkt ~ack_number
-                                ~sequence ~options ~syn ~fin
+                                  ~sequence ~options ~syn ~fin
+        end
 (* End my code *)
 (*      | true , false -> process_syn t id ~listeners ~pkt ~ack_number ~sequence
                           ~options ~syn ~fin   *)
