@@ -122,7 +122,10 @@ struct
         | true  -> Sequence.of_int 0                  (* Handling T5  *)
         | false -> Sequence.of_int32 ack_number       (* Original     *)
       in
-      let rx_ack = Some (Sequence.of_int32 (Int32.add sequence datalen)) in
+      let rx_ack = match syn with
+        | true  -> Some (Sequence.of_int32 (Int32.add sequence datalen))
+        | false -> None (* Set ack=false i.e. F=R, set ack # = 0l; based on wire.ml *)
+(* End my code *)
       WIRE.xmit ~ip ~id ~rst:true ~rx_ack ~seq ~window ~options []
 
     (* Output a SYN packet *)
