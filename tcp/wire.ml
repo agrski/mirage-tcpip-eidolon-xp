@@ -48,6 +48,15 @@ module Make (Ip:V1_LWT.IP) = struct
     let tcp_frame = Cstruct.shift frame header_len in
     (* Append the TCP options to the header *)
     let options_frame = Cstruct.shift tcp_frame Tcp_wire.sizeof_tcp in
+(* HERE Begin my code *)
+    (* Options contains window scaling value - if 0, ignore it *)
+    let options = List.fold_left (fun a -> function
+      | Options.Window_size_shift 0 -> a (* Drop unnecessary parameter *)
+      | opt -> opt :: a )
+      []
+      options
+    in
+(* End my code        *)
     let options_len =
       match options with
       |[] -> 0
@@ -72,7 +81,8 @@ module Make (Ip:V1_LWT.IP) = struct
     if syn then Tcp_wire.set_syn tcp_frame;
     if fin then Tcp_wire.set_fin tcp_frame;
     if psh then Tcp_wire.set_psh tcp_frame;
-    Tcp_wire.set_tcp_window tcp_frame window;
+    if rst = false then
+      Tcp_wire.set_tcp_window tcp_frame window;
     Tcp_wire.set_tcp_checksum tcp_frame 0;
     Tcp_wire.set_tcp_urg_ptr tcp_frame 0;
     let checksum = Ip.checksum frame (tcp_frame :: datav) in
