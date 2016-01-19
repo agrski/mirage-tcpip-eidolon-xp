@@ -502,11 +502,19 @@ struct
       let syn = Tcp_wire.get_syn pkt in
       let ack = Tcp_wire.get_ack pkt in
       let fin = Tcp_wire.get_fin pkt in
+      let psh = Tcp_Wire.get_psh pkt in
+      let urg = Tcp_wire.get_urg pkt in
       match syn, ack with
       | true , true  -> process_synack t id ~pkt ~ack_number ~sequence
                           ~options ~syn ~fin
-      | true , false -> process_syn t id ~listeners ~pkt ~ack_number ~sequence
-                          ~options ~syn ~fin
+(* HERE My code - exclude response to T3 probe from nmap *)
+      | true, false  -> match fin, urg, psh with
+        | true, true, true  -> Lwt.return_unit
+        | _, _, _           -> process_syn t id ~listeners ~pkt ~ack_number
+                                ~sequence ~options ~syn ~fin
+(* End my code *)
+(*      | true , false -> process_syn t id ~listeners ~pkt ~ack_number ~sequence
+                          ~options ~syn ~fin   *)
       | false, true  -> process_ack t id ~pkt ~ack_number ~sequence ~syn ~fin
       | false, false ->
         (* What the hell is this packet? No SYN,ACK,RST *)
