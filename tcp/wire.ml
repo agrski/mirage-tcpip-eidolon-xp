@@ -69,7 +69,7 @@ module Make (Ip:V1_LWT.IP) = struct
     let sequence = Sequence.to_int32 seq in
     let ack_number = match rx_ack with
       | Some n  -> Sequence.to_int32 n
-      | None    -> Random.int32 65535
+      | None    -> Random.int32 65535l
     in
     let data_off = (Tcp_wire.sizeof_tcp / 4) + (options_len / 4) in
     Tcp_wire.set_tcp_src_port tcp_frame id.local_port;
