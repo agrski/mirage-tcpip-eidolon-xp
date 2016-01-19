@@ -502,7 +502,7 @@ struct
       let syn = Tcp_wire.get_syn pkt in
       let ack = Tcp_wire.get_ack pkt in
       let fin = Tcp_wire.get_fin pkt in
-      let psh = Tcp_Wire.get_psh pkt in
+      let psh = Tcp_wire.get_psh pkt in
       let urg = Tcp_wire.get_urg pkt in
       match syn, ack with
       | true , true  -> process_synack t id ~pkt ~ack_number ~sequence
