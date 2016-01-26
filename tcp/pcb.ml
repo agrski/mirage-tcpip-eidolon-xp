@@ -309,6 +309,15 @@ struct
     let (rx_wnd_scale, tx_wnd_scale), opts =
       resolve_wnd_scaling options rx_wnd_scaleoffer
     in
+(* HERE - My code - check if getting SACK_ok in here *)
+    let sack_ok = List.fold_left (fun a -> function
+      | Options.SACK_ok -> true
+      | _               -> false )
+      []
+      options
+    in
+    if sack_ok then Printf.printf "SACK okay received\n";
+(* End my code *)
     (* Set up the windowing variables *)
     let rx_isn = Sequence.of_int32 sequence in
     (* Initialise the window handler *)
