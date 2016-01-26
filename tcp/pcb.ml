@@ -398,7 +398,22 @@ struct
       | other -> Printf.printf "Other\n" )
       options;
     Printf.printf "\n";
-    TXS.output ~flags:Segment.Syn ~options pcb.txq [] >>= fun () ->
+    let rev_ops = List.rev options in
+    let options = List.fold_left (fun a -> function
+      | Options.SACK_ok -> [Options.SACK_ok] @ a
+      | opt -> opt :: a )
+      []
+      rev_ops
+    in
+    Printf.printf "After appending SACK_ok to end\n";
+    List.iter (function
+     | Options.MSS m -> Printf.printf "Maximum Segment Size: %d\n" m
+     | Options.SACK_ok -> Printf.printf "Sack okay\n"
+     | Options.Window_size_shift w -> Printf.printf "Window scaling: %d\n" w
+     | other -> Printf.printf "Other\n" )
+     options;
+   Printf.printf "\n";
+   TXS.output ~flags:Segment.Syn ~options pcb.txq [] >>= fun () ->
     Lwt.return (pcb, th)
 
   let new_client_connection t params id ack_number =
