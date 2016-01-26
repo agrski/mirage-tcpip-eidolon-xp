@@ -310,11 +310,7 @@ struct
       resolve_wnd_scaling options rx_wnd_scaleoffer
     in
 (* HERE - My code - check if getting SACK_ok in here *)
-    let sack_ok = List.fold_left (fun a -> function
-      | Options.SACK_ok -> true
-      | _               -> false )
-      []
-      options
+    let sack_ok = List.mem Options.SACK_ok options
     in
     if sack_ok then Printf.printf "SACK okay received\n";
 (* End my code *)
