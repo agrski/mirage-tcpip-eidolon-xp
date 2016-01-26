@@ -40,6 +40,12 @@ module Make (Ip:V1_LWT.IP) = struct
     local_ip: Ip.ipaddr;        (* Local IP address *)
   }
 
+(* HERE
+    Handling options for nmap probes
+    Basic response seems to be M=ox5B4, W=2
+    If W != 0, then prefix W with a nop (N)
+    If SACK permitted (S) prefix it with 2 nops (NN)
+ *)
   let xmit ~ip ~id ?(rst=false) ?(syn=false) ?(fin=false) ?(psh=false)
       ~rx_ack ~seq ~window ~options datav =
     (* Make a TCP/IP header frame *)
@@ -58,7 +64,12 @@ module Make (Ip:V1_LWT.IP) = struct
     in
  *)
 (* End my code        *)
+(* HERE MY code
+    Add additional Noops where required
+*)
+(* End my code *)
     let options_len =
+      (* Options should handle extending by necessary amounts to handle inserted NOPs *)
       match options with
       |[] -> 0
       |options -> Options.marshal options_frame options
