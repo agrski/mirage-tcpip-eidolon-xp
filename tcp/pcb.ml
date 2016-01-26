@@ -310,17 +310,12 @@ struct
       resolve_wnd_scaling options rx_wnd_scaleoffer
     in
 (* HERE - My code - check if getting SACK_ok in here *)
-    let sack_ok = List.mem Options.SACK_ok options
-    in
-    if sack_ok then
-      begin
-        Printf.printf "SACK okay received\n";
-        (* Use of append (@) comes at minimal cost - list will be very short,
-            likely only 1 or 2 elements long
-         *)
-        let opts = opts @ [Options.SACK_ok]
-      end
-    in
+    let sack_ok = List.mem Options.SACK_ok options in
+    if sack_ok then Printf.printf "SACK okay received\n";
+    (* Use of append (@) comes at minimal cost - list will be very short,
+       likely only 1 or 2 elements long
+      *)
+    let opts = if sack_ok then opts @ [Options.SACK_ok] else opts in
 (* End my code *)
     (* Set up the windowing variables *)
     let rx_isn = Sequence.of_int32 sequence in
