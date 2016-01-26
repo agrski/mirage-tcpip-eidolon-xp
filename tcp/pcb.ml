@@ -313,6 +313,10 @@ struct
     let sack_ok = List.mem Options.SACK_ok options
     in
     if sack_ok then Printf.printf "SACK okay received\n";
+    (* Use of append (@) comes at minimal cost - list will be very short,
+        likely only 1 or 2 elements long
+     *)
+    let opts = [ Options.SACK_ok ] @ opts in
 (* End my code *)
     (* Set up the windowing variables *)
     let rx_isn = Sequence.of_int32 sequence in
