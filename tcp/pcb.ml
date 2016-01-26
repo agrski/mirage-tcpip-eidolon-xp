@@ -395,7 +395,7 @@ struct
       | Options.MSS m -> Printf.printf "Maximum Segment Size: %d\n" m
       | Options.SACK_ok -> Printf.printf "Sack okay\n"
       | Options.Window_size_shift w -> Printf.printf "Window scaling: %d\n" w
-      | other -> "Other\n" )
+      | other -> Printf.printf "Other\n" )
       options;
     TXS.output ~flags:Segment.Syn ~options pcb.txq [] >>= fun () ->
     Lwt.return (pcb, th)
