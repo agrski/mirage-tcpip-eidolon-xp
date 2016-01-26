@@ -397,7 +397,6 @@ struct
       | Options.Window_size_shift w -> Printf.printf "Window scaling: %d\n" w
       | other -> Printf.printf "Other\n" )
       options;
-    Printf.printf "\n";
     let rev_ops = List.rev options in
     let options = List.fold_left (fun a -> function
       | Options.SACK_ok -> a @ [Options.SACK_ok]
