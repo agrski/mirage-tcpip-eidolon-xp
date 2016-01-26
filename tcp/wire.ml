@@ -67,6 +67,14 @@ module Make (Ip:V1_LWT.IP) = struct
 (* HERE MY code
     Add additional Noops where required
 *)
+    let rev_ops = List.rev options in
+    let options = List.fold_left ( fun a -> function
+      | Options.Window_size_shift w -> Options.Noop :: Options.Window_size_shift w :: a
+      | Options.SACK_ok             -> Options.Noop :: Options.Noop :: Options.SACK_ok :: a
+      | opt                         -> opt :: a )
+      []      (* Accumulator *)
+      rev_ops (* List to apply to *)
+    in
 (* End my code *)
     let options_len =
       (* Options should handle extending by necessary amounts to handle inserted NOPs *)
