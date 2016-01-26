@@ -79,8 +79,8 @@ module Make (Ip:V1_LWT.IP) = struct
     let options_len =
       (* Options should handle extending by necessary amounts to handle inserted NOPs *)
       match options with
-      |[] -> 0
-      |options -> Options.marshal options_frame options
+      | [] -> 0
+      | options -> Options.marshal options_frame options
     in
     let tcp_frame = Cstruct.set_len tcp_frame (Tcp_wire.sizeof_tcp + options_len) in
     (* At this point, extend the IPv4 view by the TCP+options size *)
