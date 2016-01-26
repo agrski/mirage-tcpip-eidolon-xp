@@ -56,11 +56,12 @@ module Make (Ip:V1_LWT.IP) = struct
     let options_frame = Cstruct.shift tcp_frame Tcp_wire.sizeof_tcp in
 (* HERE Begin my code *)
     (* Options contains window scaling value - if 0, ignore it *)
+    let rev_ops = List.rev options in
     let options = List.fold_left (fun a -> function
       | Options.Window_size_shift 0 -> a (* Drop unnecessary parameter *)
       | opt -> opt :: a )
       []
-      List.rev options
+      rev_ops
     in
 (* End my code        *)
 (* HERE MY code
