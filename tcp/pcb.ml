@@ -316,7 +316,7 @@ struct
     (* Use of append (@) comes at minimal cost - list will be very short,
         likely only 1 or 2 elements long
      *)
-    let opts = [Options.SACK_ok] @ opts in
+    let opts = opts @ [Options.SACK_ok] in
 (* End my code *)
     (* Set up the windowing variables *)
     let rx_isn = Sequence.of_int32 sequence in
@@ -397,13 +397,14 @@ struct
       | Options.Window_size_shift w -> Printf.printf "Window scaling: %d\n" w
       | other -> Printf.printf "Other\n" )
       options;
-    let rev_ops = List.rev options in
+(*    let rev_ops = List.rev options in
     let options = List.fold_left (fun a -> function
       | Options.SACK_ok -> a @ [Options.SACK_ok]
       | opt -> opt :: a )
       []
       rev_ops
-    in
+*)    in
+    Printf.printf "Commented out";
     Printf.printf "After appending SACK_ok to end\n";
     List.iter (function
      | Options.MSS m -> Printf.printf "Maximum Segment Size: %d\n" m
