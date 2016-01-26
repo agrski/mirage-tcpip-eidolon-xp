@@ -403,7 +403,7 @@ struct
       | opt -> opt :: a )
       []
       rev_ops
-*)    in
+    in *)
     Printf.printf "Commented out";
     Printf.printf "After appending SACK_ok to end\n";
     List.iter (function
