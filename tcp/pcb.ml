@@ -400,7 +400,7 @@ struct
     Printf.printf "\n";
     let rev_ops = List.rev options in
     let options = List.fold_left (fun a -> function
-      | Options.SACK_ok -> [Options.SACK_ok] @ a
+      | Options.SACK_ok -> a @ [Options.SACK_ok]
       | opt -> opt :: a )
       []
       rev_ops
