@@ -192,6 +192,8 @@ module Make(Ethif: V1_LWT.ETHIF) (Arpv4 : V1_LWT.ARP) = struct
       match Wire_structs.Ipv4_wire.int_to_protocol proto with
       | Some `ICMP -> icmp_input t src hdr data
       | Some `TCP  -> tcp ~src ~dst data
+(* HERE - U1 response should be ICMP - maybe want to check for listeners  *)
+(* Listeners already passed in to udp function (input in udp.ml)          *)
       | Some `UDP  -> udp ~src ~dst data
       | None       -> default ~proto ~src ~dst data
     end else Lwt.return_unit

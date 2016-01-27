@@ -53,6 +53,15 @@ module Make(Ip: V1_LWT.IP) = struct
       let src_port = Wire_structs.get_udp_source_port buf in
       fn ~src ~dst ~src_port data
 
+  let respond_u1 ~src ~dst ~src_port t bufs =
+    let frame, header_len = Ip.allocate_frame t.ip ~dst:dest_up ~proto:`ICMP in
+    etc
+
+(*
+(* HERE - Respond to nmap's U1 probe
+    Look at ipv4.ml - icmp_input function
+    May wish to call this
+ *)
   let respond_u1 ~source_port ~dest_ip ~dest_port t bufs =
     let frame, header_len = Ip.allocate_frame t.ip ~dst:dest_ip ~proto:`UDP in
     let frame = Cstruct.set_len frame (header_len + Wire_structs.sizeof_udp) in
@@ -60,13 +69,18 @@ module Make(Ip: V1_LWT.IP) = struct
     Wire_structs.set_udp_source_port udp_buf source_port;
     Wire_structs.set_udp_dest_port udp_bug dest_port;
 (* HERE - IPL - Modify to add up to 0xB0 = 176 bytes *)
-    Wire_structs.set_udp_length udp_buf (Wire_structs.sizeof_udp + Cstruct.lenv bufs);
+(*    Wire_structs.set_udp_length udp_buf (Wire_structs.sizeof_udp + Cstruct.lenv bufs);  *)
+(* Have header_len = IP header length, sizeof_udp *)
+    let data_len = 176 - Wire_structs.Ipv4_wire.sizeof_ipv4 - Wire_structs.sizeof_udp in
+    Wire_structs.set_udp_length udp_buf (Wire_structs.sizeof_udp + data_len);
+(* HERE - Need to truncate bufs to data_len *)
     let csum = Ip.checksum frame (udp_buf :: bufs) in
     Wire_structs.set_udp_checksum udp_buf csum;
     Ip.writev t.ip frame bufs
 (* HERE - Need to handle ICMP echo reply code value set to zero = 0 *)
 (* HERE - Need to handle ICMP port unreachable header's last four bytes being zero;
     it's 8 bytes long *)
+*)
 
   let writev ?source_port ~dest_ip ~dest_port t bufs =
     begin match source_port with
