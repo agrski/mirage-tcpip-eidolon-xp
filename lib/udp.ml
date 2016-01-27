@@ -44,10 +44,29 @@ module Make(Ip: V1_LWT.IP) = struct
         (Wire_structs.get_udp_length buf - Wire_structs.sizeof_udp)
     in
     match listeners ~dst_port with
-    | None    -> Lwt.return_unit
+(* HERE - U1 - Respond on closed port with None *)
+(*    | None    -> Lwt.return_unit    *)
+    | None    ->
+      let src_port = Wire_structs.get_udp_source_port buf in
+      respond_u1 ~src ~dst ~src_port t bufs
     | Some fn ->
       let src_port = Wire_structs.get_udp_source_port buf in
       fn ~src ~dst ~src_port data
+
+  let respond_u1 ~source_port ~dest_ip ~dest_port t bufs =
+    let frame, header_len = Ip.allocate_frame t.ip ~dst:dest_ip ~proto:`UDP in
+    let frame = Cstruct.set_len frame (header_len + Wire_structs.sizeof_udp) in
+    let udp_buf = Cstruct.shift frame header_len in
+    Wire_structs.set_udp_source_port udp_buf source_port;
+    Wire_structs.set_udp_dest_port udp_bug dest_port;
+(* HERE - IPL - Modify to add up to 0xB0 = 176 bytes *)
+    Wire_structs.set_udp_length udp_buf (Wire_structs.sizeof_udp + Cstruct.lenv bufs);
+    let csum = Ip.checksum frame (udp_buf :: bufs) in
+    Wire_structs.set_udp_checksum udp_buf csum;
+    Ip.writev t.ip frame bufs
+(* HERE - Need to handle ICMP echo reply code value set to zero = 0 *)
+(* HERE - Need to handle ICMP port unreachable header's last four bytes being zero;
+    it's 8 bytes long *)
 
   let writev ?source_port ~dest_ip ~dest_port t bufs =
     begin match source_port with
