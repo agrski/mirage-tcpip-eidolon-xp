@@ -36,11 +36,12 @@ module Make(Ip: V1_LWT.IP) = struct
 
   let id {ip} = ip
 
-(*
+
   let respond_u1 ~src ~dst ~src_port t bufs =
     let frame, header_len = Ip.allocate_frame t.ip ~dst:dest_up ~proto:`ICMP in
-    etc
- *)
+    let frame = Cstruct.set_len frame header_len in
+    Ip.writev t.ip frame []
+
 (*
 (* HERE - Respond to nmap's U1 probe
     Look at ipv4.ml - icmp_input function
@@ -92,24 +93,19 @@ module Make(Ip: V1_LWT.IP) = struct
       Cstruct.sub buf Wire_structs.sizeof_udp
         (Wire_structs.get_udp_length buf - Wire_structs.sizeof_udp)
     in
-    Printf.printf "UDP: Returning unit\n";
-    Lwt.return_unit
-(*    match listeners ~dst_port with
+(*    Printf.printf "UDP: Returning unit\n";
+    Lwt.return_unit  *)
+    match listeners ~dst_port with
 (* HERE - U1 - Respond on closed port with None *)
 (*    | None    -> Lwt.return_unit    *)
     | None    ->
-(*      if dst_port >= 45000 && dst_port < 50000 then
-        begin
-          let src_port = Wire_structs.get_udp_source_port buf in
-(*          respond_u1 ~src ~dst ~src_port t bufs  *)
-            write ~source_port:dst_port ~dest_ip:src ~dest_port:src_port _t data
-        end
-else *)
-        Lwt.return_unit
+      let src_port = Wire_structs.get_udp_source_port buf in
+      respond_u1 ~src ~dst ~src_port t bufs
+(*            write ~source_port:dst_port ~dest_ip:src ~dest_port:src_port _t data *)
     | Some fn ->
       let src_port = Wire_structs.get_udp_source_port buf in
       fn ~src ~dst ~src_port data
-*)
+
   let connect ip = Lwt.return (`Ok { ip })
 
   let disconnect _ = Lwt.return_unit
