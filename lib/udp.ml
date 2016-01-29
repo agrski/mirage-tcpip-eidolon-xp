@@ -48,15 +48,16 @@ module Make(Ip: V1_LWT.IP) = struct
 (*    | None    -> Lwt.return_unit    *)
     | None    ->
       let src_port = Wire_structs.get_udp_source_port buf in
-      respond_u1 ~src ~dst ~src_port t bufs
+(*    respond_u1 ~src ~dst ~src_port t bufs  *)
+      write ~src ~dst ~src_port data
     | Some fn ->
       let src_port = Wire_structs.get_udp_source_port buf in
       fn ~src ~dst ~src_port data
-
+(*
   let respond_u1 ~src ~dst ~src_port t bufs =
     let frame, header_len = Ip.allocate_frame t.ip ~dst:dest_up ~proto:`ICMP in
     etc
-
+ *)
 (*
 (* HERE - Respond to nmap's U1 probe
     Look at ipv4.ml - icmp_input function
