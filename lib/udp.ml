@@ -37,7 +37,7 @@ module Make(Ip: V1_LWT.IP) = struct
   let id {ip} = ip
 
 
-  let respond_u1 ~src ~dst ~src_port t bufs =
+  let respond_u1 ~src ~dst ~src_port t buf =
     let frame, header_len = Ip.allocate_frame t.ip ~dst ~proto:`ICMP in
     let frame = Cstruct.set_len frame header_len in
     Ip.writev t.ip frame []
@@ -100,7 +100,7 @@ module Make(Ip: V1_LWT.IP) = struct
 (*    | None    -> Lwt.return_unit    *)
     | None    ->
       let src_port = Wire_structs.get_udp_source_port buf in
-      respond_u1 ~src ~dst ~src_port _t bufs
+      respond_u1 ~src ~dst ~src_port _t buf
 (*            write ~source_port:dst_port ~dest_ip:src ~dest_port:src_port _t data *)
     | Some fn ->
       let src_port = Wire_structs.get_udp_source_port buf in
