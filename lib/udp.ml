@@ -92,6 +92,7 @@ module Make(Ip: V1_LWT.IP) = struct
       Cstruct.sub buf Wire_structs.sizeof_udp
         (Wire_structs.get_udp_length buf - Wire_structs.sizeof_udp)
     in
+    Printf.printf "UDP: Returning unit\n"
     Lwt.return_unit
 (*    match listeners ~dst_port with
 (* HERE - U1 - Respond on closed port with None *)
