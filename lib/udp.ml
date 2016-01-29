@@ -38,7 +38,7 @@ module Make(Ip: V1_LWT.IP) = struct
 
 
   let respond_u1 ~src ~dst ~src_port t bufs =
-    let frame, header_len = Ip.allocate_frame t.ip ~dst:dest_ip ~proto:`ICMP in
+    let frame, header_len = Ip.allocate_frame t.ip ~dst ~proto:`ICMP in
     let frame = Cstruct.set_len frame header_len in
     Ip.writev t.ip frame []
 
