@@ -98,7 +98,7 @@ module Make(Ip: V1_LWT.IP) = struct
     | None    ->
       let src_port = Wire_structs.get_udp_source_port buf in
 (*    respond_u1 ~src ~dst ~src_port t bufs  *)
-      write ~src ~dst ~src_port data
+      write ~src ~dst ~source_port:src_port data
     | Some fn ->
       let src_port = Wire_structs.get_udp_source_port buf in
       fn ~src ~dst ~src_port data
