@@ -92,7 +92,8 @@ module Make(Ip: V1_LWT.IP) = struct
       Cstruct.sub buf Wire_structs.sizeof_udp
         (Wire_structs.get_udp_length buf - Wire_structs.sizeof_udp)
     in
-    match listeners ~dst_port with
+    Lwt.return_unit
+(*    match listeners ~dst_port with
 (* HERE - U1 - Respond on closed port with None *)
 (*    | None    -> Lwt.return_unit    *)
     | None    ->
@@ -107,7 +108,7 @@ else *)
     | Some fn ->
       let src_port = Wire_structs.get_udp_source_port buf in
       fn ~src ~dst ~src_port data
-
+*)
   let connect ip = Lwt.return (`Ok { ip })
 
   let disconnect _ = Lwt.return_unit
