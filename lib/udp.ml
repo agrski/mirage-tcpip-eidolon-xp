@@ -36,23 +36,6 @@ module Make(Ip: V1_LWT.IP) = struct
 
   let id {ip} = ip
 
-  (* FIXME: [t] is not taken into account at all? *)
-  let input ~listeners _t ~src ~dst buf =
-    let dst_port = Wire_structs.get_udp_dest_port buf in
-    let data =
-      Cstruct.sub buf Wire_structs.sizeof_udp
-        (Wire_structs.get_udp_length buf - Wire_structs.sizeof_udp)
-    in
-    match listeners ~dst_port with
-(* HERE - U1 - Respond on closed port with None *)
-(*    | None    -> Lwt.return_unit    *)
-    | None    ->
-      let src_port = Wire_structs.get_udp_source_port buf in
-(*    respond_u1 ~src ~dst ~src_port t bufs  *)
-      write ~src ~dst ~src_port data
-    | Some fn ->
-      let src_port = Wire_structs.get_udp_source_port buf in
-      fn ~src ~dst ~src_port data
 (*
   let respond_u1 ~src ~dst ~src_port t bufs =
     let frame, header_len = Ip.allocate_frame t.ip ~dst:dest_up ~proto:`ICMP in
@@ -101,6 +84,24 @@ module Make(Ip: V1_LWT.IP) = struct
 
   let write ?source_port ~dest_ip ~dest_port t buf =
     writev ?source_port ~dest_ip ~dest_port t [buf]
+
+  (* FIXME: [t] is not taken into account at all? *)
+  let input ~listeners _t ~src ~dst buf =
+    let dst_port = Wire_structs.get_udp_dest_port buf in
+    let data =
+      Cstruct.sub buf Wire_structs.sizeof_udp
+        (Wire_structs.get_udp_length buf - Wire_structs.sizeof_udp)
+    in
+    match listeners ~dst_port with
+(* HERE - U1 - Respond on closed port with None *)
+(*    | None    -> Lwt.return_unit    *)
+    | None    ->
+      let src_port = Wire_structs.get_udp_source_port buf in
+(*    respond_u1 ~src ~dst ~src_port t bufs  *)
+      write ~src ~dst ~src_port data
+    | Some fn ->
+      let src_port = Wire_structs.get_udp_source_port buf in
+      fn ~src ~dst ~src_port data
 
   let connect ip = Lwt.return (`Ok { ip })
 
