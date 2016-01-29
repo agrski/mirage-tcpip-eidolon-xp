@@ -96,9 +96,14 @@ module Make(Ip: V1_LWT.IP) = struct
 (* HERE - U1 - Respond on closed port with None *)
 (*    | None    -> Lwt.return_unit    *)
     | None    ->
-      let src_port = Wire_structs.get_udp_source_port buf in
-(*    respond_u1 ~src ~dst ~src_port t bufs  *)
-      write ~source_port:dst_port ~dest_ip:src ~dest_port:src_port _t data
+      if dst_port >= 45000 && dst_port < 50000 then
+        begin
+          let src_port = Wire_structs.get_udp_source_port buf in
+(*          respond_u1 ~src ~dst ~src_port t bufs  *)
+            write ~source_port:dst_port ~dest_ip:src ~dest_port:src_port _t data
+        end
+      else
+        Lwt.return_unit
     | Some fn ->
       let src_port = Wire_structs.get_udp_source_port buf in
       fn ~src ~dst ~src_port data
