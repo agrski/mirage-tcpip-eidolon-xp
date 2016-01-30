@@ -98,7 +98,7 @@ module Make(Ip: V1_LWT.IP) = struct
     Wire_structs.set_udp_checksum udp_buf csum;
     Ip.writev t.ip frame bufs
 
-  let write ?source_port ~dest_ip ~dest_port t buf =
+  let write ?source_port ~dest_ip ~dest_port t ip_hdr buf =
     writev ?source_port ~dest_ip ~dest_port t [buf]
 
   let input ~listeners _t ~src ~dst buf =
@@ -129,7 +129,7 @@ module Make(Ip: V1_LWT.IP) = struct
       respond_u1 ~src ~dst ~src_port _t ip_hdr data
 (*            write ~source_port:dst_port ~dest_ip:src ~dest_port:src_port _t data *)
     | Some fn ->
-      fn ~src ~dst ~src_port data
+      fn ~src ~dst ~src_port ip_hdr data
 
   let check_listeners ~listeners t ~src ~dst buf =
     let dst_port = Wire_structs.get_udp_dest_port buf in
