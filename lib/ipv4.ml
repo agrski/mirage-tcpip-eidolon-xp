@@ -31,6 +31,7 @@ module Make(Ethif: V1_LWT.ETHIF) (Arpv4 : V1_LWT.ARP) = struct
   type ipaddr = Ipaddr.V4.t
   type prefix = Ipaddr.V4.t
   type callback = src:ipaddr -> dst:ipaddr -> buffer -> unit Lwt.t
+  type callback_udp = src:ipaddr -> dst:ipaddr -> buffer -> buffer -> unit Lwt.t
   type macaddr = Ethif.macaddr
 
   type t = {
