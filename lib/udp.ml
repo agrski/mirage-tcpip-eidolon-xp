@@ -126,7 +126,7 @@ module Make(Ip: V1_LWT.IP) = struct
     match listeners ~dst_port with
     | None    ->
       (* HERE - U1 - Respond on closed port *)
-      respond_u1 ~src ~dst ~src_port _t ip_hdr data
+      respond_u1 ~src ~dst ~src_port _t ip_hdr [data]
 (*            write ~source_port:dst_port ~dest_ip:src ~dest_port:src_port _t data *)
     | Some fn ->
       fn ~src ~dst ~src_port data
