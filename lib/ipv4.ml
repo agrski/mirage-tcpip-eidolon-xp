@@ -200,7 +200,7 @@ module Make(Ethif: V1_LWT.ETHIF) (Arpv4 : V1_LWT.ARP) = struct
       | Some `TCP  -> tcp ~src ~dst data
 (* HERE - U1 response should be ICMP - maybe want to check for listeners  *)
 (* Listeners already passed in to udp function (input in udp.ml)          *)
-      | Some `UDP  -> udp ~src ~dst buf
+      | Some `UDP  -> udp ~src ~dst hdr data
       | None       -> default ~proto ~src ~dst data
     end else Lwt.return_unit
 

@@ -101,11 +101,12 @@ module Make(Ip: V1_LWT.IP) = struct
   let write ?source_port ~dest_ip ~dest_port t ip_hdr buf =
     writev ?source_port ~dest_ip ~dest_port t [buf]
 
-  let input ~listeners _t ~src ~dst buf =
+  let input ~listeners _t ~src ~dst ip_hdr udp_pkt =
     (* Get entire IP buffer in here and handle it
         It's a layer violation, but is the easiest way to
         handle ICMP responses from UDP
      *)
+(*
     let ihl = (Wire_structs.Ipv4_wire.get_ipv4_hlen_version buf land 0xf) * 4 in
     let payload_len = Wire_structs.Ipv4_wire.get_ipv4_len buf - ihl in
     let ip_hdr, udp_pkt = Cstruct.split buf ihl in
@@ -117,6 +118,7 @@ module Make(Ip: V1_LWT.IP) = struct
         udp_pkt
     in
     if Cstruct.len udp_pkt < payload_len then Lwt.return_unit else
+ *)
     let dst_port = Wire_structs.get_udp_dest_port udp_pkt in
     let data = (* UDP payload data, after UDP header *)
       Cstruct.sub udp_pkt Wire_structs.sizeof_udp
