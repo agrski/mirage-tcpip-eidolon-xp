@@ -133,7 +133,7 @@ module Make(Ip: V1_LWT.IP) = struct
 
   let check_listeners ~listeners t ~src ~dst buf =
     let dst_port = Wire_structs.get_udp_dest_port buf in
-    match dst_port with
+    match listeners dst_port with
     | None    -> Lwt.return_false
     | Some _  -> Lwt.return_true
 
