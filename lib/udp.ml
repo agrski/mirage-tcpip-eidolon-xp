@@ -37,10 +37,23 @@ module Make(Ip: V1_LWT.IP) = struct
   let id {ip} = ip
 
 
-  let respond_u1 ~src ~dst ~src_port t buf =
+  let respond_u1 ~src ~dst ~src_port t ip_hdr buf =
+    (* buf is UDP payload data - not UDP header *)
+    (* frame = ethernet, header_len is of ethernet + IP *)
     let frame, header_len = Ip.allocate_frame t.ip ~dst ~proto:`ICMP in
-    let frame = Cstruct.set_len frame (header_len + Cstruct.lenv buf) in
-    Ip.writev t.ip frame buf
+    let frame = Cstruct.set_len frame (header_len + 8) in (* ICMP = 8 bytes *)
+    let ip_id = Wire_structs.Ipv4_wire.get_ipv4_id ip_hdr in
+    let icmp_frame = Cstruct.shift frame header_len in (* Go to ICMP header + data *)
+    (* Set ICMP stuff here *)
+    Wire_structs.Ipv4_wire.set_icmpv4_csum icmp_frame 0;   (* TODO: Do checksum properly *)
+    Wire_structs.Ipv4_wire.set_icmpv4_ty icmp_frame 3;     (* Destination unreachable  *)
+    Wire_structs.Ipv4_wire.set_icmpv4_code icmp_frame 3;   (* Port unreachable         *)
+(*    Wire_structs.Ipv4_wire.set_icmpv4_id icmp_frame ip_id; (* = Ox1042 *)  *)
+    (* Truncate payload - buf - as necessary here *)
+    (* ICMP requires at least IP hdr of offending packet and first 8 bytes of data
+        to be returned
+     *)
+    Ip.writev t.ip frame (ip_hdr :: buf)
 
 (*
 (* HERE - Respond to nmap's U1 probe
@@ -67,6 +80,8 @@ module Make(Ip: V1_LWT.IP) = struct
     it's 8 bytes long *)
 *)
 
+
+
   let writev ?source_port ~dest_ip ~dest_port t bufs =
     begin match source_port with
       | None   -> Lwt.fail (Failure "TODO; random source port")
@@ -86,25 +101,42 @@ module Make(Ip: V1_LWT.IP) = struct
   let write ?source_port ~dest_ip ~dest_port t buf =
     writev ?source_port ~dest_ip ~dest_port t [buf]
 
-  (* FIXME: [t] is not taken into account at all? *)
   let input ~listeners _t ~src ~dst buf =
-    let dst_port = Wire_structs.get_udp_dest_port buf in
-    let data =
-      Cstruct.sub buf Wire_structs.sizeof_udp
-        (Wire_structs.get_udp_length buf - Wire_structs.sizeof_udp)
+    (* Get entire IP buffer in here and handle it
+        It's a layer violation, but is the easiest way to
+        handle ICMP responses from UDP
+     *)
+    let ihl = (Wire_structs.Ipv4_wire.get_ipv4_hlen_version buf land 0xf) * 4 in
+    let payload_len = Wire_structs.Ipv4_wire.get_ipv4_len buf - ihl in
+    let ip_hdr, udp_pkt = Cstruct.split buf ihl in
+    let udp_pkt =
+      if Cstruct.len udp_pkt > payload_len then
+        (* Strip trailing bytes *)
+        Cstruct.sub udp_pkt 0 payload_len
+      else
+        udp_pkt
     in
-(*    Printf.printf "UDP: Returning unit\n";
-    Lwt.return_unit  *)
+    if udp_pkt < payload_len then Lwt.return_unit;
+    let dst_port = Wire_structs.get_udp_dest_port udp_pkt in
+    let data = (* UDP payload data, after UDP header *)
+      Cstruct.sub udp_pkt Wire_structs.sizeof_udp
+        (Wire_structs.get_udp_length udp_pkt - Wire_structs.sizeof_udp)
+    in
+    let src_port = Wire_structs.get_udp_source_port udp_pkt in
     match listeners ~dst_port with
-(* HERE - U1 - Respond on closed port with None *)
-(*    | None    -> Lwt.return_unit    *)
     | None    ->
-      let src_port = Wire_structs.get_udp_source_port buf in
-      respond_u1 ~src ~dst ~src_port _t buf
+      (* HERE - U1 - Respond on closed port *)
+      respond_u1 ~src ~dst ~src_port _t ip_hdr data
 (*            write ~source_port:dst_port ~dest_ip:src ~dest_port:src_port _t data *)
     | Some fn ->
-      let src_port = Wire_structs.get_udp_source_port buf in
       fn ~src ~dst ~src_port data
+
+  let check_listeners ~listeners t ~src ~dst buf =
+    tcpip.
+    let dst_port = Wire_structs.get_udp_dest_port buf in
+    match dst_port with
+    | None    -> Lwt.return_false
+    | Some _  -> Lwt.return_true
 
   let connect ip = Lwt.return (`Ok { ip })
 

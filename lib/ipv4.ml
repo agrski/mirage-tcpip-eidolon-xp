@@ -178,6 +178,12 @@ module Make(Ethif: V1_LWT.ETHIF) (Arpv4 : V1_LWT.ARP) = struct
       printf "ICMP unknown ty %d\n" ty;
       Lwt.return_unit
 
+(*
+  let icmp_respond_u1 ~src ~dst ~src_port t buf =
+    let frame, header_len = allocate_frame t ~dst:src ~proto:`ICMP in
+    (* HERE *)
+ *)
+
   let input t ~tcp ~udp ~default buf =
     (* buf pointers to start of IPv4 header here *)
     let ihl = (Wire_structs.Ipv4_wire.get_ipv4_hlen_version buf land 0xf) * 4 in
@@ -194,7 +200,7 @@ module Make(Ethif: V1_LWT.ETHIF) (Arpv4 : V1_LWT.ARP) = struct
       | Some `TCP  -> tcp ~src ~dst data
 (* HERE - U1 response should be ICMP - maybe want to check for listeners  *)
 (* Listeners already passed in to udp function (input in udp.ml)          *)
-      | Some `UDP  -> udp ~src ~dst data
+      | Some `UDP  -> udp ~src ~dst buf
       | None       -> default ~proto ~src ~dst data
     end else Lwt.return_unit
 
