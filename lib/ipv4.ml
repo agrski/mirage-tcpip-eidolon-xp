@@ -185,7 +185,7 @@ module Make(Ethif: V1_LWT.ETHIF) (Arpv4 : V1_LWT.ARP) = struct
     (* HERE *)
  *)
 
-  let input t ~tcp ~udp ~default buf =
+  let input t ~tcp ~(udp : callback_udp) ~default buf =
     (* buf pointers to start of IPv4 header here *)
     let ihl = (Wire_structs.Ipv4_wire.get_ipv4_hlen_version buf land 0xf) * 4 in
     let src = Ipaddr.V4.of_int32 (Wire_structs.Ipv4_wire.get_ipv4_src buf) in
