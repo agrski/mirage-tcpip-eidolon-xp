@@ -23,7 +23,7 @@ module Make(Ip: V1_LWT.IP) = struct
   type ip = Ip.t
   type ipaddr = Ip.ipaddr
   type ipinput = src:ipaddr -> dst:ipaddr -> buffer -> unit io
-  type callback = src:ipaddr -> dst:ipaddr -> src_port:int -> Cstruct.t -> Cstruct.t -> unit Lwt.t
+  type callback = src:ipaddr -> dst:ipaddr -> src_port:int -> Cstruct.t -> unit Lwt.t
 
   (** IO operation errors *)
   type error = [

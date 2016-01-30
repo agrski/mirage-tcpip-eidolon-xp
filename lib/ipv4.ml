@@ -31,7 +31,6 @@ module Make(Ethif: V1_LWT.ETHIF) (Arpv4 : V1_LWT.ARP) = struct
   type ipaddr = Ipaddr.V4.t
   type prefix = Ipaddr.V4.t
   type callback = src:ipaddr -> dst:ipaddr -> buffer -> unit Lwt.t
-  type callback_udp = src:ipaddr -> dst:ipaddr -> buffer -> buffer -> unit Lwt.t
   type macaddr = Ethif.macaddr
 
   type t = {
@@ -185,13 +184,17 @@ module Make(Ethif: V1_LWT.ETHIF) (Arpv4 : V1_LWT.ARP) = struct
     (* HERE *)
  *)
 
-  let input t ~tcp ~(udp : callback_udp) ~default buf =
+  let input t ~tcp ~udp ~default buf =
     (* buf pointers to start of IPv4 header here *)
     let ihl = (Wire_structs.Ipv4_wire.get_ipv4_hlen_version buf land 0xf) * 4 in
     let src = Ipaddr.V4.of_int32 (Wire_structs.Ipv4_wire.get_ipv4_src buf) in
     let dst = Ipaddr.V4.of_int32 (Wire_structs.Ipv4_wire.get_ipv4_dst buf) in
     let payload_len = Wire_structs.Ipv4_wire.get_ipv4_len buf - ihl in
     let hdr, data = Cstruct.split buf ihl in
+    (* Put hdr and data back together in a Cstruct for UDP handler *)
+    let hdr_copy = Cstruct.copy hdr 0 Cstruct.len hdr in
+    let data_copy = Cstruct.copy data 0 Cstruct.len data in
+    let ip_frame = Cstruct.append hdr_copy data_copy in
     if Cstruct.len data >= payload_len then begin
       (* Strip trailing bytes. See: https://github.com/mirage/mirage-net-xen/issues/24 *)
       let data = Cstruct.sub data 0 payload_len in
@@ -201,7 +204,7 @@ module Make(Ethif: V1_LWT.ETHIF) (Arpv4 : V1_LWT.ARP) = struct
       | Some `TCP  -> tcp ~src ~dst data
 (* HERE - U1 response should be ICMP - maybe want to check for listeners  *)
 (* Listeners already passed in to udp function (input in udp.ml)          *)
-      | Some `UDP  -> udp ~src ~dst hdr data
+      | Some `UDP  -> udp ~src ~dst ip_frame
       | None       -> default ~proto ~src ~dst data
     end else Lwt.return_unit
 
