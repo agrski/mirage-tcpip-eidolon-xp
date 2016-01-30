@@ -116,7 +116,7 @@ module Make(Ip: V1_LWT.IP) = struct
       else
         udp_pkt
     in
-    if Cstruct.len udp_pkt < payload_len then Lwt.return_unit;
+    if Cstruct.len udp_pkt < payload_len then Lwt.return_unit else
     let dst_port = Wire_structs.get_udp_dest_port udp_pkt in
     let data = (* UDP payload data, after UDP header *)
       Cstruct.sub udp_pkt Wire_structs.sizeof_udp
