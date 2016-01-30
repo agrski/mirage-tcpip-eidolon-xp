@@ -101,7 +101,7 @@ module Make(Ip: V1_LWT.IP) = struct
   let write ?source_port ~dest_ip ~dest_port t buf =
     writev ?source_port ~dest_ip ~dest_port t [buf]
 
-  let input ~listeners _t ~src ~dst udp_pkt =
+  let input ~listeners _t ~src ~dst buf =
     (* Get entire IP buffer in here and handle it
         It's a layer violation, but is the easiest way to
         handle ICMP responses from UDP
