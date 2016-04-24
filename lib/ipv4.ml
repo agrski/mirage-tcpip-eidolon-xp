@@ -194,6 +194,7 @@ module Make(Ethif: V1_LWT.ETHIF) (Arpv4 : V1_LWT.ARP) = struct
     (* Put hdr and data back together in a Cstruct for UDP handler *)
 (*    let ip_frame = Cstruct.append hdr data in *)
     if Cstruct.len data >= payload_len then begin
+      Printf.printf "\nData >= payload length\n";
       (* Strip trailing bytes. See: https://github.com/mirage/mirage-net-xen/issues/24 *)
       let data = Cstruct.sub data 0 payload_len in
       let proto = Wire_structs.Ipv4_wire.get_ipv4_proto buf in
