@@ -112,7 +112,7 @@ module Make(Ethif: V1_LWT.ETHIF) (Arpv4 : V1_LWT.ARP) = struct
     Wire_structs.Ipv4_wire.set_ipv4_hlen_version buf ((4 lsl 4) + (5)); (* TODO options *)
     Wire_structs.Ipv4_wire.set_ipv4_tos buf 0;
     Wire_structs.Ipv4_wire.set_ipv4_off buf 0; (* TODO fragmentation *)
-    Wire_structs.Ipv4_wire.set_ipv4_ttl buf 38; (* TODO *)
+    Wire_structs.Ipv4_wire.set_ipv4_ttl buf 64; (* TODO *)
     let proto = Wire_structs.Ipv4_wire.protocol_to_int proto in
     Wire_structs.Ipv4_wire.set_ipv4_proto buf proto;
     Wire_structs.Ipv4_wire.set_ipv4_src buf (Ipaddr.V4.to_int32 t.ip);
