@@ -87,7 +87,13 @@ module Make(Ip: V1_LWT.IP) = struct
     let ihl = (Wire_structs.Ipv4_wire.get_ipv4_hlen_version buf land 0xf) * 4 in
     let payload_len = Wire_structs.Ipv4_wire.get_ipv4_len buf - ihl in
 (*    let icmp_data, _ = Cstruct.split buf (ihl + 8) in *)
-    let icmp_data, _ = Cstruct.split buf (ihl + 128) in (* Should give 176 bytes = 0xb0 *)
+    let icmp_split_point =
+      if Cstruct.len buf > (ihl + 128) then
+        (ihl + 128)
+      else
+        (ihl + 8)
+    in
+    let icmp_data, _ = Cstruct.split buf icmp_split_point in (* Should give 176 bytes = 0xb0 *)
     let ip_hdr, udp_pkt = Cstruct.split buf ihl in
     Printf.printf "\nSplit into IP header and UDP datagram";
     let udp_pkt =
