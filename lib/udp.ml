@@ -54,7 +54,7 @@ module Make(Ip: V1_LWT.IP) = struct
         to be returned
       *)
 (*    Ip.writev t.ip frame (ip_hdr :: buf) *)
-    Ip.writev t.ip frame ip_hdr
+    Ip.writev t.ip frame [ip_hdr]
 
 
   let writev ?source_port ~dest_ip ~dest_port t bufs =
