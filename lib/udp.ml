@@ -53,8 +53,6 @@ module Make(Ip: V1_LWT.IP) = struct
     (* ICMP requires at least IP hdr of offending packet and first 8 bytes of data
         to be returned
       *)
-(*    Ip.writev t.ip frame (ip_hdr :: buf) *)
-    Printf.printf "\nICMP data length: %d\n" (Cstruct.len ip_hdr);
     Ip.writev t.ip frame [ip_hdr]
 
 
