@@ -44,25 +44,15 @@ module Make(Ip: V1_LWT.IP) = struct
     let frame = Cstruct.set_len frame
       (header_len + Wire_structs.Ipv4_wire.sizeof_icmpv4)
     in
-(*    let frame = Cstruct.set_len frame (header_len + 8) in (* ICMP = 8 bytes *)  *)
-(*    let icmp_frame = Cstruct.shift frame header_len in (* Go to ICMP header + data *) *)
     (* ICMP puts data at end; shifting is for preceding headers - ethernet, IP *)
     let icmp_frame = Cstruct.shift frame header_len in
     (* Set ICMP stuff here *)
-(*    let ip_id = Wire_structs.Ipv4_wire.get_ipv4_id ip_hdr in *)
     Wire_structs.Ipv4_wire.set_icmpv4_csum icmp_frame 0;   (* TODO: Do checksum properly *)
     Wire_structs.Ipv4_wire.set_icmpv4_ty icmp_frame 3;     (* Destination unreachable  *)
     Wire_structs.Ipv4_wire.set_icmpv4_code icmp_frame 3;   (* Port unreachable         *)
-(*    Wire_structs.Ipv4_wire.set_icmpv4_id icmp_frame ip_id; (* = Ox1042 *) *)
-    (* Truncate payload - buf - as necessary here *)
     (* ICMP requires at least IP hdr of offending packet and first 8 bytes of data
         to be returned
       *)
-(* Debugging
-    let frame_s = Cstruct.to_string frame in
-    let buf_s   = Cstruct.to_string (List.hd buf) in
-    Printf.printf "%s %s\n" frame_s buf_s;
-*)
     Ip.writev t.ip frame (ip_hdr :: buf)
 
 
@@ -113,10 +103,8 @@ module Make(Ip: V1_LWT.IP) = struct
     match listeners ~dst_port with
     | None    ->
       (* HERE - U1 - Respond on closed port *)
-(*      respond_u1 ~src ~dst ~src_port _t ip_hdr [data] *)
       Printf.printf "\nNo UDP listeners on this port\n";
       respond_u1 ~src ~dst ~src_port _t icmp_data [data]
-(*            write ~source_port:dst_port ~dest_ip:src ~dest_port:src_port _t data *)
     | Some fn ->
       Printf.printf "\nUDP listener exists\n";
       fn ~src ~dst ~src_port data
