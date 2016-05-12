@@ -40,19 +40,10 @@ module Make (Ip:V1_LWT.IP) = struct
     local_ip: Ip.ipaddr;        (* Local IP address *)
   }
 
-(* HERE
-    Handling options for nmap probes
-    Basic response seems to be M=ox5B4, W=2
-    If W != 0, then prefix W with a nop (N)
-    If SACK permitted (S) prefix it with 2 nops (NN)
- *)
   let xmit ~ip ~id ?(rst=false) ?(syn=false) ?(fin=false) ?(psh=false)
       ~rx_ack ~seq ~window ~options datav =
-    (* Make a TCP/IP header frame *)
     let frame, header_len = Ip.allocate_frame ip ~dst:id.dest_ip ~proto:`TCP in
-    (* Shift this out by the combined ethernet + IP header sizes *)
     let tcp_frame = Cstruct.shift frame header_len in
-    (* Append the TCP options to the header *)
     let options_frame = Cstruct.shift tcp_frame Tcp_wire.sizeof_tcp in
 (* HERE Begin my code *)
     (* Options contains window scaling value - if 0, ignore it *)

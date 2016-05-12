@@ -14,8 +14,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-open Lwt.Infix
-
 module Make(Ip: V1_LWT.IP) = struct
 
   type 'a io = 'a Lwt.t
@@ -39,19 +37,16 @@ module Make(Ip: V1_LWT.IP) = struct
 
   let respond_u1 ~src ~dst ~src_port t ip_hdr buf =
     (* buf is UDP payload data - not UDP header *)
-    (* frame = ethernet, header_len is of ethernet + IP *)
     let frame, header_len = Ip.allocate_frame t.ip ~dst:src ~proto:`ICMP in
     let frame = Cstruct.set_len frame
       (header_len + Wire_structs.Ipv4_wire.sizeof_icmpv4)
     in
-    (* ICMP puts data at end; shifting is for preceding headers - ethernet, IP *)
     let icmp_frame = Cstruct.shift frame header_len in
-    (* Set ICMP stuff here *)
     Wire_structs.Ipv4_wire.set_icmpv4_csum icmp_frame 0;   (* TODO: Do checksum properly *)
     Wire_structs.Ipv4_wire.set_icmpv4_ty icmp_frame 3;     (* Destination unreachable  *)
     Wire_structs.Ipv4_wire.set_icmpv4_code icmp_frame 3;   (* Port unreachable         *)
     (* ICMP requires at least IP hdr of offending packet and first 8 bytes of data
-        to be returned
+        to be returned - this is ip_hdr
       *)
     Ip.writev t.ip frame [ip_hdr]
 
@@ -84,7 +79,6 @@ module Make(Ip: V1_LWT.IP) = struct
     Printf.printf "\nUDP input";
     let ihl = (Wire_structs.Ipv4_wire.get_ipv4_hlen_version buf land 0xf) * 4 in
     let payload_len = Wire_structs.Ipv4_wire.get_ipv4_len buf - ihl in
-(*    let icmp_data, _ = Cstruct.split buf (ihl + 8) in *)
     let icmp_split_point =
       if Cstruct.len buf > (ihl + 128) then
         (ihl + 128)
@@ -101,7 +95,6 @@ module Make(Ip: V1_LWT.IP) = struct
       else
         udp_pkt
     in
-(*    if Cstruct.len udp_pkt < payload_len then Lwt.return_unit else *)
     let dst_port = Wire_structs.get_udp_dest_port udp_pkt in
     let data = (* UDP payload data, after UDP header *)
       Cstruct.sub udp_pkt Wire_structs.sizeof_udp

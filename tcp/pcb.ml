@@ -124,7 +124,7 @@ struct
       in
       let rx_ack = match syn with
         | true  -> Some (Sequence.of_int32 (Int32.add sequence datalen))
-        | false -> None (* Set ack=false i.e. F=R, set ack # = 0l; based on wire.ml *)
+        | false -> None
       in
 (* End my code *)
       WIRE.xmit ~ip ~id ~rst:true ~rx_ack ~seq ~window ~options []
@@ -396,13 +396,6 @@ struct
       | Options.Window_size_shift w -> Printf.printf "Window scaling: %d\n" w
       | other -> Printf.printf "Other\n" )
       options;
-(*    let rev_ops = List.rev options in
-    let options = List.fold_left (fun a -> function
-      | Options.SACK_ok -> a @ [Options.SACK_ok]
-      | opt -> opt :: a )
-      []
-      rev_ops
-    in *)
     Printf.printf "After appending SACK_ok to end\n";
     List.iter (function
      | Options.MSS m -> Printf.printf "Maximum Segment Size: %d\n" m
@@ -543,11 +536,8 @@ struct
                                   ~sequence ~options ~syn ~fin
         end
 (* End my code *)
-(*      | true , false -> process_syn t id ~listeners ~pkt ~ack_number ~sequence
-                          ~options ~syn ~fin   *)
       | false, true  -> process_ack t id ~pkt ~ack_number ~sequence ~syn ~fin
       | false, false ->
-        (* What the hell is this packet? No SYN,ACK,RST *)
         Log.s debug "input-no-pcb: unknown packet";
         Lwt.return_unit
 
